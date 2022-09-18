@@ -34,6 +34,8 @@ public class GamePanel extends JPanel implements Runnable{
 	}
 	
 	public void newBall() {
+		random = new Random();
+		ball = new Ball((GAME_WIDTH/2)-(BALL_DIAMETER/2),random.nextInt(GAME_HEIGHT-BALL_DIAMETER), BALL_DIAMETER, BALL_DIAMETER);
 		
 	}
 	public void newPaddles() {
@@ -49,11 +51,50 @@ public class GamePanel extends JPanel implements Runnable{
 	public void draw(Graphics g) {
 		paddle1.draw(g);
 		paddle2.draw(g);
+		ball.draw(g);
+		score.draw(g);
 	}
 	public void move() {
+		paddle1.move();
+		paddle2.move();
+		ball.move();
 		
 	}
 	public void checkCollision() {
+		//omejimo igralno plosco za zogo, da se odbije od zgornjega in spodnjega roba
+		if (ball.y <= 0) {
+			ball.setYDirection(-ball.yVelocity);
+		}
+		if (ball.y >= GAME_HEIGHT-BALL_DIAMETER) {
+			ball.setYDirection(-ball.yVelocity);
+		}
+		
+		//da se zoga odbije od paddle
+		if (ball.intersects(paddle1)) {
+			ball.xVelocity = Math.abs(ball.xVelocity);
+			//povecamo hitrost ko se odbije od paddle
+			ball.xVelocity++;
+			if(ball.yVelocity>0) {
+				ball.yVelocity++;
+			}else {
+				ball.yVelocity--;
+			}
+			ball.setXDirection(ball.xVelocity);
+			ball.setYDirection(ball.yVelocity);
+		}
+		if (ball.intersects(paddle2)) {
+			ball.xVelocity = Math.abs(ball.xVelocity);
+			//povecamo hitrost ko se odbije od paddle
+			ball.xVelocity++;
+			if(ball.yVelocity>0) {
+				ball.yVelocity++;
+			}else {
+				ball.yVelocity--;
+			}
+			ball.setXDirection(-ball.xVelocity);
+			ball.setYDirection(ball.yVelocity);
+		}
+		
 		//ce se paddel zaleti v rob okna
 		if(paddle1.y<=0) {
 			paddle1.y=0;
@@ -66,6 +107,20 @@ public class GamePanel extends JPanel implements Runnable{
 		}
 		if(paddle2.y >= (GAME_HEIGHT-PADDLE_HEIGHT)) {
 			paddle2.y = GAME_HEIGHT-PADDLE_HEIGHT;
+		}
+		//preveri ce gre zoga mimo paddle1(player1)-> torej dobi tocko player2, ustvari nove paddle in novo zogo za novo rundo
+		if(ball.x <= 0) {
+			score.player2++;
+			newPaddles();
+			newBall();
+			System.out.println("Player2: " +score.player2);
+		}
+		
+		if(ball.x >= GAME_WIDTH-BALL_DIAMETER) {
+			score.player1++;
+			newPaddles();
+			newBall();
+			System.out.println("Player1: " +score.player1);
 		}
 		
 	}
